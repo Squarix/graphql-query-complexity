@@ -53,6 +53,13 @@ const rule = createComplexityRule({
   createError: (max: number, actual: number) => {
     return new GraphQLError(`Query is too complex: ${actual}. Maximum allowed complexity: ${max}`);
   },
+  
+  // Optional callback function called each time complexity reach maximum allowed
+  // Can be used to throw error to prevent unnecessary calculations in huge queries
+  onMaximumComplexity: (max: number, actual: number) => {
+      throw new GraphQLError(`Query reached maximum allowed complexity: ${max}`);
+  },
+
 
   // Add any number of estimators. The estimators are invoked in order, the first
   // numeric value that is being returned by an estimator is used as the field complexity.

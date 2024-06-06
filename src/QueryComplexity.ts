@@ -80,6 +80,10 @@ export interface QueryComplexityOptions {
   // Optional function to create a custom error
   createError?: (max: number, actual: number) => GraphQLError;
 
+  // Optional callback function called each time complexity reach maximum allowed
+  // Can be used to throw error to prevent unnecessary calculations in huge queries
+  onMaximumComplexity?: (max: number, actual: number) => void;
+
   // An array of complexity estimators to use for estimating the complexity
   estimators: Array<ComplexityEstimator>;
 
@@ -480,7 +484,13 @@ export default class QueryComplexity {
       if (!selectionSetComplexities) {
         return NaN;
       }
-      return Math.max(...Object.values(selectionSetComplexities), 0);
+
+      const nodeComplexity = Math.max(...Object.values(selectionSetComplexities), 0);
+      if (this.options.onMaximumComplexity && nodeComplexity > this.options.maximumComplexity) {
+        this.options.onMaximumComplexity(nodeComplexity, this.options.maximumComplexity);
+      }
+
+      return nodeComplexity;
     }
     return 0;
   }
